@@ -1,6 +1,19 @@
 import torch.nn
 
 
+class NeuralNetwork(torch.nn.Module):
+    """The neural network architecture for object detection.
+
+    Based on Darknet, a deep learning framework used for the
+    You Only Look Once (YOLO) algoritm.
+    """
+
+    def __init__(self, config_file_path: str) -> None:
+        super(NeuralNetwork, self).__init__()
+        self.blocks = read_configuration(config_file_path)
+        self.network_info, self.module_list = create_modules(self.blocks)
+
+
 class EmptyLayer(torch.nn.Module):
     """Placeholder layer.
 
@@ -10,7 +23,7 @@ class EmptyLayer(torch.nn.Module):
     to concatenate feature maps.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         super(EmptyLayer, self).__init__()
 
 
@@ -21,7 +34,7 @@ class DetectionLayer(torch.nn.Module):
     Holds anchors for detecting bounding boxes.
     """
 
-    def __init__(self, anchors):
+    def __init__(self, anchors) -> None:
         super(DetectionLayer, self).__init__()
         self.anchors = anchors
 
