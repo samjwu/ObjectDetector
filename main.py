@@ -9,6 +9,7 @@ class EmptyLayer(torch.nn.Module):
     after calling the forward method from torch.nn.Module
     to concatenate feature maps.
     """
+
     def __init__(self):
         super(EmptyLayer, self).__init__()
 
@@ -19,6 +20,7 @@ class DetectionLayer(torch.nn.Module):
     Used by YOLO layer.
     Holds anchors for detecting bounding boxes.
     """
+
     def __init__(self, anchors):
         super(DetectionLayer, self).__init__()
         self.anchors = anchors
@@ -67,17 +69,19 @@ def read_configuration(config_file_path: str) -> list[dict[str, str]]:
     return blocks
 
 
-def create_modules(blocks: list[dict[str, str]]) -> tuple[dict[str, str], torch.nn.ModuleList]:
+def create_modules(
+    blocks: list[dict[str, str]]
+) -> tuple[dict[str, str], torch.nn.ModuleList]:
     """Create modules from block information.
 
-    For convolutional layers, add the batch normalization and 
+    For convolutional layers, add the batch normalization and
     leaky Rectified Linear Unit (ReLU) layers, if present, to the same module.
 
     Args:
         blocks (list[dict[str, str]]): List of configurations for the layers.
 
     Returns:
-        network_info (tuple[dict[str, str]): Contains the 
+        network_info (tuple[dict[str, str]): Contains the
             inputs to the network and training parameters.
         module_list (torch.nn.ModuleList): List of layers to be used
             in the neural network.
@@ -130,22 +134,22 @@ def create_modules(blocks: list[dict[str, str]]) -> tuple[dict[str, str], torch.
 
         elif block["type"] == "upsample":  # upsample layer
             stride = int(block["stride"])
-            
+
             upsample = torch.nn.Upsample(scale_factor=2, mode="nearest")
-            
+
             module.add_module("upsample_{}".format(index), upsample)
 
         elif block["type"] == "route":  # route layer
             block["layers"] = block["layers"].split(",")
-            
+
             route_start = int(block["layers"][0])
-            
+
             try:
                 route_end = int(block["layers"][1])
             except:
                 route_end = 0
 
-            # if value is positive, subtract current index 
+            # if value is positive, subtract current index
             # (to account for negative values)
             if route_start > 0:
                 route_start = route_start - index
@@ -155,9 +159,12 @@ def create_modules(blocks: list[dict[str, str]]) -> tuple[dict[str, str], torch.
             route = EmptyLayer()
 
             module.add_module("route_{0}".format(index), route)
-            
+
             if route_end < 0:
-                filters = output_filters[index + route_start] + output_filters[index + route_end]
+                filters = (
+                    output_filters[index + route_start]
+                    + output_filters[index + route_end]
+                )
             else:
                 filters = output_filters[index + route_start]
 
@@ -176,7 +183,7 @@ def create_modules(blocks: list[dict[str, str]]) -> tuple[dict[str, str], torch.
             anchors = [anchors[i] for i in mask]
 
             detection = DetectionLayer(anchors)
-            
+
             module.add_module("Detection_{}".format(index), detection)
 
         module_list.append(module)
@@ -187,4 +194,5 @@ def create_modules(blocks: list[dict[str, str]]) -> tuple[dict[str, str], torch.
 
 
 config_file_path = "yolo.cfg"
-read_configuration(config_file_path)
+blocks = read_configuration(config_file_path)
+network_info, module_list = create_modules(blocks)
