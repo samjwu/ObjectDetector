@@ -45,7 +45,7 @@ def read_configuration(config_file_path: str) -> list[dict[str, str]]:
 
         for line in lines:
             # skip comments and empty lines
-            if line[0] == "#" or len(line) == 0:
+            if len(line) == 0 or line[0] == "#":
                 continue
             else:
                 configs.append(line.lstrip().rstrip())
@@ -60,10 +60,10 @@ def read_configuration(config_file_path: str) -> list[dict[str, str]]:
                     blocks.append(block)
                     block.clear()
 
-                block["type"] = config[1:-1]
+                block["type"] = config[1:-1].rstrip()
             else:
                 key, value = config.split("=")
-                block[key] = value
+                block[key.rstrip()] = value.lstrip()
         blocks.append(block)
 
     return blocks
@@ -89,6 +89,7 @@ def create_modules(
     network_info = blocks[0]
     module_list = torch.nn.ModuleList()
     prev_filters = 3
+    filters = 3
     output_filters = []
 
     for index, block in enumerate(blocks[1:]):
