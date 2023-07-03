@@ -1,8 +1,9 @@
+import torch
 import torch.nn
 
 
 class NeuralNetwork(torch.nn.Module):
-    """The neural network architecture for object detection.
+    """The convolutional neural network architecture for object detection.
 
     Based on Darknet, a deep learning framework used for the
     You Only Look Once (YOLO) algoritm.
@@ -12,6 +13,28 @@ class NeuralNetwork(torch.nn.Module):
         super(NeuralNetwork, self).__init__()
         self.blocks = read_configuration(config_file_path)
         self.network_info, self.module_list = create_modules(self.blocks)
+
+    def forward(self, x, CUDA) -> torch.Tensor:
+        """Performs computation for each forward pass.
+
+        Iterate over modules, concatenating feature maps for each layer.
+        """
+        modules = self.blocks[1:]
+        # cache for route and shortcut layers
+        outputs = {}  # outputs[layer index] = feature map
+
+        write = False
+        for idx, module in enumerate(modules):
+            module_type = module["type"]
+
+            if not write:
+                detections = x
+                write = True
+
+            else:
+                detections = torch.cat((detections, x), 1)
+
+        return detections
 
 
 class EmptyLayer(torch.nn.Module):
@@ -48,7 +71,8 @@ def read_configuration(config_file_path: str) -> list[dict[str, str]]:
         config_file_path (str): Path to the configuration file.
 
     Returns:
-        A list of dictionaries representing the block or information for each layer.
+        blocks (list[dict[str, str]]): A list of blocks
+            representing the information for each layer.
     """
     blocks = []
 
