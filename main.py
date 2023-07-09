@@ -1,6 +1,8 @@
 import torch
 import torch.nn
 
+import util
+
 
 class NeuralNetwork(torch.nn.Module):
     """The convolutional neural network architecture for object detection.
@@ -14,7 +16,7 @@ class NeuralNetwork(torch.nn.Module):
         self.blocks = read_configuration(config_file_path)
         self.network_info, self.module_list = create_modules(self.blocks)
 
-    def forward(self, x, CUDA: bool) -> torch.Tensor:
+    def forward(self, x, use_cuda: bool) -> torch.Tensor:
         """Performs computation for each forward pass.
 
         Iterate over modules, concatenating feature maps for each layer.
@@ -56,7 +58,9 @@ class NeuralNetwork(torch.nn.Module):
                 anchors = self.module_list[i][0].anchors
                 num_classes = int(module["classes"])
                 x = x.data
-                x = predict_transform(x, input_dimensions, anchors, num_classes, CUDA)
+                x = util.predict_transform(
+                    x, input_dimensions, anchors, num_classes, use_cuda
+                )
 
                 if not write:
                     detections = x
