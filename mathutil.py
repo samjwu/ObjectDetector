@@ -1,3 +1,5 @@
+"""Utility functions for calculations."""
+
 import numpy
 import torch
 

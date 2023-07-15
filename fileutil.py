@@ -1,3 +1,5 @@
+"""Utility functions for reading files."""
+
 import torch.nn
 
 import layers

@@ -1,4 +1,4 @@
-"""Custom classes for layers in the object detector neural network"""
+"""Custom layers for the object detector neural network."""
 
 import torch.nn
 

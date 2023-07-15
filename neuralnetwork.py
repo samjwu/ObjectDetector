@@ -1,3 +1,5 @@
+"""The convolutional neural network architecture for object detection."""
+
 import torch
 import torch.nn
 
@@ -5,7 +7,7 @@ import mathutil
 
 
 class NeuralNetwork(torch.nn.Module):
-    """The convolutional neural network architecture for object detection.
+    """Convolutional neural network.
 
     Based on Darknet, a deep learning framework used for the
     You Only Look Once (YOLO) algoritm.
