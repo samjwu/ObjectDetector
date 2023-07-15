@@ -1,5 +1,8 @@
 """Utility functions for reading files."""
 
+import cv2
+import numpy
+import torch.autograd
 import torch.nn
 
 import layers
@@ -172,3 +175,24 @@ def create_modules(
         output_filters.append(filters)
 
     return (network_info, module_list)
+
+
+def process_input_image(file: str):
+    """Read and process an image file."""
+    img = cv2.imread(file)
+
+    # transpose BGR to RGB  (height, width, color -> color, height, width)
+    processed_img =  img[:,:,::-1].transpose((2,0,1))
+
+    # add a dimension at index 0 for batches
+    processed_img = processed_img[numpy.newaxis,:,:,:]
+
+    # normalize
+    processed_img /= 255.0 
+
+    processed_img = torch.from_numpy(processed_img).float()
+
+    # tensor wrapper for computing gradients
+    processed_img = Variable(processed_img)
+
+    return processed_img
