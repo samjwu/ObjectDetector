@@ -41,7 +41,7 @@ def read_configuration(config_file_path: str) -> list[dict[str, str]]:
                 # add previous block to list of blocks
                 if block:
                     blocks.append(block)
-                    block.clear()
+                    block = {}
 
                 block["type"] = config[1:-1].rstrip()
             else:
@@ -185,14 +185,11 @@ def process_input_image(file: str):
     processed_img =  img[:,:,::-1].transpose((2,0,1))
 
     # add a dimension at index 0 for batches
-    processed_img = processed_img[numpy.newaxis,:,:,:]
-
-    # normalize
-    processed_img /= 255.0 
+    processed_img = processed_img[numpy.newaxis,:,:,:]/255.0
 
     processed_img = torch.from_numpy(processed_img).float()
 
     # tensor wrapper for computing gradients
-    processed_img = Variable(processed_img)
+    processed_img = torch.autograd.Variable(processed_img)
 
     return processed_img
