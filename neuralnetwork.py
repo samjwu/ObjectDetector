@@ -3,6 +3,7 @@
 import torch
 import torch.nn
 
+import fileutil
 import mathutil
 
 
@@ -15,8 +16,8 @@ class NeuralNetwork(torch.nn.Module):
 
     def __init__(self, config_file_path: str) -> None:
         super(NeuralNetwork, self).__init__()
-        self.blocks = read_configuration(config_file_path)
-        self.network_info, self.module_list = create_modules(self.blocks)
+        self.blocks = fileutil.read_configuration(config_file_path)
+        self.network_info, self.module_list = fileutil.create_modules(self.blocks)
 
     def forward(self, x, use_cuda: bool) -> torch.Tensor:
         """Performs computation for each forward pass.
@@ -32,7 +33,7 @@ class NeuralNetwork(torch.nn.Module):
             module_type = module["type"]
 
             if module_type == "convolutional" or module_type == "upsample":
-                x = self.module_list[i](x)
+                x = self.module_list[idx](x)
 
             elif module_type == "route":
                 layers = module["layers"]
@@ -56,8 +57,8 @@ class NeuralNetwork(torch.nn.Module):
                 x = outputs[idx - 1] + outputs[idx + from_layer]
 
             elif module_type == "yolo":
-                input_dimensions = int(self.net_info["height"])
-                anchors = self.module_list[i][0].anchors
+                input_dimensions = int(self.network_info["height"])
+                anchors = self.module_list[idx][0].anchors
                 num_classes = int(module["classes"])
                 x = x.data
                 x = mathutil.predict_transform(
@@ -70,6 +71,6 @@ class NeuralNetwork(torch.nn.Module):
                 else:
                     detections = torch.cat((detections, x), 1)
 
-            outputs[i] = x
+            outputs[idx] = x
 
         return detections

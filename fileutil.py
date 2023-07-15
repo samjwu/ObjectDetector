@@ -109,11 +109,11 @@ def create_modules(
             module.add_module("conv_{0}".format(index), convolutional_layer)
 
             if batch_normalize:
-                batch_normalize_layer = nn.BatchNorm2d(filters)
+                batch_normalize_layer = torch.nn.BatchNorm2d(filters)
                 module.add_module("batch_norm_{0}".format(index), batch_normalize_layer)
 
             if activation == "leaky":
-                activation_layer = nn.LeakyReLU(0.1, inplace=True)
+                activation_layer = torch.nn.LeakyReLU(0.1, inplace=True)
                 module.add_module("leaky_{0}".format(index), activation_layer)
 
         elif block["type"] == "upsample":  # upsample layer
