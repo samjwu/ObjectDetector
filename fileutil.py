@@ -72,7 +72,6 @@ def create_modules(
     network_info = blocks[0]
     module_list = torch.nn.ModuleList()
     prev_filters = 3
-    filters = 3
     output_filters = []
 
     for index, block in enumerate(blocks[1:]):
@@ -180,6 +179,8 @@ def create_modules(
 def process_input_image(file: str):
     """Read and process an image file."""
     img = cv2.imread(file)
+
+    img = cv2.resize(img, (416, 416))
 
     # transpose BGR to RGB  (height, width, color -> color, height, width)
     processed_img =  img[:,:,::-1].transpose((2,0,1))
