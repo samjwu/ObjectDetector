@@ -6,6 +6,7 @@ import torch.autograd
 import torch.nn
 
 import layers
+import mathutil
 
 
 def read_configuration(config_file_path: str) -> list[dict[str, str]]:
@@ -183,10 +184,10 @@ def process_input_image(file: str):
     img = cv2.resize(img, (416, 416))
 
     # transpose BGR to RGB  (height, width, color -> color, height, width)
-    processed_img =  img[:,:,::-1].transpose((2,0,1))
+    processed_img = img[:, :, ::-1].transpose((2, 0, 1))
 
     # add a dimension at index 0 for batches
-    processed_img = processed_img[numpy.newaxis,:,:,:]/255.0
+    processed_img = processed_img[numpy.newaxis, :, :, :] / 255.0
 
     processed_img = torch.from_numpy(processed_img).float()
 
@@ -194,3 +195,125 @@ def process_input_image(file: str):
     processed_img = torch.autograd.Variable(processed_img)
 
     return processed_img
+
+
+def determine_output(
+    prediction,
+    confidence: float,
+    num_classes: int,
+    non_maximum_suppression_confidence: int = 0.4,
+) -> torch.Tensor:
+    """Calculate and return the output."""
+    # set prediction attributes to zero
+    # for bounding boxes below the confidence threshold
+    confidence_mask = (prediction[:, :, 4] > confidence).float().unsqueeze(2)
+    prediction = prediction * confidence_mask
+
+    # get bounding box corner coordinates from bounding box attributes
+    box_corner = prediction.new(prediction.shape)
+    box_corner[:, :, 0] = prediction[:, :, 0] - prediction[:, :, 2] / 2
+    box_corner[:, :, 1] = prediction[:, :, 1] - prediction[:, :, 3] / 2
+    box_corner[:, :, 2] = prediction[:, :, 0] + prediction[:, :, 2] / 2
+    box_corner[:, :, 3] = prediction[:, :, 1] + prediction[:, :, 3] / 2
+    prediction[:, :, :4] = box_corner[:, :, :4]
+
+    batch_size = prediction.size(0)
+
+    write = False
+
+    for index in range(batch_size):
+        image_prediction = prediction[index]
+
+        # obtain index of class with highest confidence score
+        max_confidence, max_confidence_score = torch.max(
+            image_prediction[:, 5 : 5 + num_classes], 1
+        )
+        max_confidence = max_confidence.float().unsqueeze(1)
+        max_confidence_score = max_confidence_score.float().unsqueeze(1)
+        sequence = (image_prediction[:, :5], max_confidence, max_confidence_score)
+        image_prediction = torch.cat(sequence, 1)
+
+        # remove bounding boxes with confidence below threshold
+        non_zero_index = torch.nonzero(image_prediction[:, 4])
+        try:
+            image_prediction_ = image_prediction[non_zero_index.squeeze(), :].view(
+                -1, 7
+            )
+        except:
+            continue
+
+        if image_prediction_.shape[0] == 0:
+            continue
+
+        # get unique classes detected in the image
+        img_classes = mathutil.unique(
+            image_prediction_[:, -1]
+        )  # index -1 to hold the class index
+
+        # apply non maximum suppression to each image class
+        for img_class in img_classes:
+            # get image detections for a class
+            class_mask = image_prediction_ * (
+                image_prediction_[:, -1] == img_class
+            ).float().unsqueeze(1)
+            class_mask_index = torch.nonzero(class_mask[:, -2]).squeeze()
+            image_prediction_class = image_prediction_[class_mask_index].view(-1, 7)
+
+            # sort detections by confidence score descending
+            confidence_sort_index = torch.sort(
+                image_prediction_class[:, 4], descending=True
+            )[1]
+
+            # get the number of detections
+            image_prediction_class = image_prediction_class[confidence_sort_index]
+            num_detections = image_prediction_class.size(0)
+
+            for i in range(num_detections):
+                # calculate the intersection over union
+                # for all boxes after the current one
+                try:
+                    intersection_over_union = (
+                        calculate_bounding_box_intersection_over_union(
+                            image_prediction_class[i].unsqueeze(0),
+                            image_prediction_class[i + 1 :],
+                        )
+                    )
+                except ValueError:
+                    break
+
+                except IndexError:
+                    break
+
+                # set all detections with intersection over union
+                # higher than the non maximum suppression confidence threshold
+                # to zero
+                intersection_over_union_mask = (
+                    (intersection_over_union < non_maximum_suppression_confidence)
+                    .float()
+                    .unsqueeze(1)
+                )
+                image_prediction_class[i + 1 :] *= intersection_over_union_mask
+
+                # remove non-zero entries
+                non_zero_index = torch.nonzero(image_prediction_class[:, 4]).squeeze()
+                image_prediction_class = image_prediction_class[non_zero_index].view(
+                    -1, 7
+                )
+
+            # repeat the batch id for each detection of the img_class in the image
+            batch_index = image_prediction_class.new(
+                image_prediction_class.size(0), 1
+            ).fill_(index)
+            sequence = batch_index, image_prediction_class
+
+            if not write:
+                output = torch.cat(sequence, 1)
+                write = True
+            else:
+                out = torch.cat(sequence, 1)
+                output = torch.cat((output, out))
+
+    try:
+        return output
+    except:
+        return 0
