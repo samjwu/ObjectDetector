@@ -64,3 +64,15 @@ def predict_transform(
     prediction[:, :, :4] *= stride
 
     return prediction
+
+
+def unique(tensor: torch.Tensor):
+    """Filter a tensor to leave just the unique elements."""
+    tensor_numpy = tensor.cpu().numpy()
+    unique_numpy = numpy.unique(tensor_numpy)
+    unique_tensor = torch.from_numpy(unique_numpy)
+
+    result_tensor = tensor.new(unique_tensor.shape)
+    result_tensor.copy_(unique_tensor)
+
+    return result_tensor
