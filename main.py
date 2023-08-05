@@ -6,7 +6,7 @@ import fileutil
 import neuralnetwork
 
 
-def arg_parse():
+def parse_arguments():
     """Process flags passed to the object detector module."""
 
     parser = argparse.ArgumentParser(description="Object Detector Module")
@@ -27,7 +27,16 @@ def arg_parse():
         default="output",
         type=str,
     )
-    parser.add_argument("-b", "--bs", dest="bs", help="Batch size", default=1)
+    parser.add_argument(
+        "-b",
+        "--batchsize",
+        dest="bs",
+        help="Batch size. \
+            Number of training samples in one forward or backward pass. \
+            Batch size defines the number of samples \
+            that will be propagated through the network each iteration.",
+        default=1,
+    )
     parser.add_argument(
         "-f",
         "--confidence",
@@ -82,18 +91,26 @@ def arg_parse():
     return parser.parse_args()
 
 
-config_file_path = "config/yolo.cfg"
-image_file_path = "data/test.png"
-weights_file_path = "data/yolov3.weights"
-blocks = fileutil.read_configuration(config_file_path)
-network_info, module_list = fileutil.create_modules(blocks)
+args = parse_arguments()
+images = args.input
+batch_size = int(args.batchsize)
+object_confidence = float(args.confidence)
+nms_threshold = float(args.nms)
+start = 0
+CUDA = torch.cuda.is_available()
 
-model = neuralnetwork.NeuralNetwork(config_file_path)
-model.load_weights(weights_file_path)
-model_input = fileutil.process_input_image(image_file_path)
-# if torch.cuda.is_available():
-#     prediction = model(model_input.cuda(), True)
-# else:
-#     prediction = model(model_input, False)
-prediction = model(model_input, False)
-print(prediction)
+# config_file_path = "config/yolo.cfg"
+# image_file_path = "data/test.png"
+# weights_file_path = "data/yolov3.weights"
+# blocks = fileutil.read_configuration(config_file_path)
+# network_info, module_list = fileutil.create_modules(blocks)
+
+# model = neuralnetwork.NeuralNetwork(config_file_path)
+# model.load_weights(weights_file_path)
+# model_input = fileutil.process_input_image(image_file_path)
+# # if torch.cuda.is_available():
+# #     prediction = model(model_input.cuda(), True)
+# # else:
+# #     prediction = model(model_input, False)
+# prediction = model(model_input, False)
+# print(prediction)
