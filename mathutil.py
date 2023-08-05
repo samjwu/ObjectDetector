@@ -5,7 +5,7 @@ import torch
 
 
 def predict_transform(
-    prediction,
+    prediction: torch.Tensor,
     input_dimensions: int,
     anchors: list[int],
     num_classes: int,
@@ -78,7 +78,9 @@ def unique(tensor: torch.Tensor):
     return result_tensor
 
 
-def calculate_bounding_box_intersection_over_union(box1, box2) -> float:
+def calculate_bounding_box_intersection_over_union(
+    box1: torch.Tensor, box2: torch.Tensor
+) -> float:
     """Calculate intersection over union of two bounding boxes."""
     # top left corner
     box1_x1, box1_y1 = box1[:, 0], box1[:, 1]
