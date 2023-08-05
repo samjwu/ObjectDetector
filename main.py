@@ -69,7 +69,7 @@ def parse_arguments():
     parser.add_argument(
         "-w",
         "--weights",
-        dest="weightsfile",
+        dest="weights",
         help="Weights file. \
             Weight is a parameter in a neural network \
             that transforms input data in the network's hidden layers. \
@@ -87,17 +87,34 @@ def parse_arguments():
         default="416",
         type=str,
     )
+    parser.add_argument(
+        "-n",
+        "--names",
+        dest="names",
+        help="File containing names of objects in the dataset.",
+        default="data/coco.names",
+        type=str,
+    )
 
     return parser.parse_args()
 
 
+# check if GPU supports CUDA
+using_cuda = torch.cuda.is_available()
+
+# get input image(s)
 args = parse_arguments()
 images = args.input
+
+# convolutional neural network configuration
 batch_size = int(args.batchsize)
 object_confidence = float(args.confidence)
 nms_threshold = float(args.nms)
-start = 0
-CUDA = torch.cuda.is_available()
+
+# COCO dataset configuration
+num_classes = 80
+names = args.names
+classes = load_classes(names)
 
 # config_file_path = "config/yolo.cfg"
 # image_file_path = "data/test.png"

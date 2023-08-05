@@ -317,3 +317,15 @@ def determine_output(
         return output
     except:
         return 0
+
+
+def load_classes(namesfile: str) -> List[str]:
+    """Read in names file containing classes of objects.
+
+    Object classes determine the classification/type of object.
+    """
+    names_file_object = open(namesfile, "r")
+
+    names = names_file_object.read().split("\n")[:-1]
+
+    return names
