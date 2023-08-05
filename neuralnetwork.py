@@ -76,17 +76,22 @@ class NeuralNetwork(torch.nn.Module):
 
         return detections
 
-    def load_weights(self, weight_file: str):
-        fp = open(weight_file, "rb")
+    def load_weights(self, weight_file: str) -> None:
+        """Load in the weights used for the convolutional neural network.
+
+        The input is multiplied by the weights
+        in the hidden layers when determining the output.
+        """
+        weight_file_object = open(weight_file, "rb")
 
         # get header information from first 5 values in weight file
         # indices 0-3: major.minor.patch version, respectively
         # indices 4/5: images seen by the network during training
-        header = numpy.fromfile(fp, dtype=numpy.int32, count=5)
+        header = numpy.fromfile(weight_file_object, dtype=numpy.int32, count=5)
         self.header = torch.from_numpy(header)
         self.seen_images = self.header[3]
 
-        weights = numpy.fromfile(fp, dtype=numpy.float32)
+        weights = numpy.fromfile(weight_file_object, dtype=numpy.float32)
 
         ptr = 0
         for i in range(len(self.module_list)):

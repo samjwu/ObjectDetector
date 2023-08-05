@@ -10,7 +10,18 @@ def predict_transform(
     anchors: list[int],
     num_classes: int,
     use_cuda: bool = True,
-):
+) -> torch.Tensor:
+    """Convert a detection feature map into a 2D tensor containing bounding box attributes.
+
+    Features are the learned representations of the input data that the model derives
+    through its layers during the training process.
+    Each layer of a captures different levels of abstraction.
+    These intermediate representations are extracted features from the input data.
+
+    Feature map AKA activation map
+    is a mapping that corresponds to the activation of different parts of the image.
+    It is a 3D representation of learned features from the input data.
+    """
     batch_size = prediction.size(0)
     stride = input_dimensions // prediction.size(2)
     grid_size = input_dimensions // stride
@@ -66,7 +77,7 @@ def predict_transform(
     return prediction
 
 
-def unique(tensor: torch.Tensor):
+def unique(tensor: torch.Tensor) -> torch.Tensor:
     """Filter a tensor to leave just the unique elements."""
     tensor_numpy = tensor.cpu().numpy()
     unique_numpy = numpy.unique(tensor_numpy)
