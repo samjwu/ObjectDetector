@@ -76,3 +76,34 @@ def unique(tensor: torch.Tensor):
     result_tensor.copy_(unique_tensor)
 
     return result_tensor
+
+
+def calculate_bounding_box_intersection_over_union(box1, box2) -> float:
+    """Calculate intersection over union of two bounding boxes."""
+    # top left corner
+    box1_x1, box1_y1 = box1[:, 0], box1[:, 1]
+    box2_x1, box2_y1 = box2[:, 0], box2[:, 1]
+    # bottom right corner
+    box1_x2, box1_y2 = box1[:, 2], box1[:, 3]
+    box2_x2, box2_y2 = box2[:, 2], box2[:, 3]
+
+    # intersection rectangle coordinates
+    intersection_rect_x1 = torch.max(box1_x1, box2_x1)
+    intersection_rect_y1 = torch.max(box1_y1, box2_y1)
+    intersection_rect_x2 = torch.min(box1_x2, box2_x2)
+    intersection_rect_y2 = torch.min(box1_y2, box2_y2)
+
+    # intersection rectangle area
+    intersection_area = torch.clamp(
+        intersection_rect_x2 - intersection_rect_x1 + 1, min=0
+    ) * torch.clamp(intersection_rect_y2 - intersection_rect_y1 + 1, min=0)
+
+    box1_area = (box1_x2 - box1_x1 + 1) * (box1_y2 - box1_y1 + 1)
+    box2_area = (box2_x2 - box2_x1 + 1) * (box2_y2 - box2_y1 + 1)
+
+    # intersection over union
+    intersection_over_union = intersection_area / (
+        box1_area + box2_area - intersection_area
+    )
+
+    return intersection_over_union

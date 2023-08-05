@@ -273,7 +273,7 @@ def determine_output(
                 # for all boxes after the current one
                 try:
                     intersection_over_union = (
-                        calculate_bounding_box_intersection_over_union(
+                        mathutil.calculate_bounding_box_intersection_over_union(
                             image_prediction_class[i].unsqueeze(0),
                             image_prediction_class[i + 1 :],
                         )
