@@ -114,7 +114,7 @@ nms_threshold = float(args.nms)
 # COCO dataset configuration
 num_classes = 80
 names = args.names
-classes = load_classes(names)
+classes = fileutil.load_classes(names)
 
 # config_file_path = "config/yolo.cfg"
 # image_file_path = "data/test.png"
