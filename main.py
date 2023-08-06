@@ -122,10 +122,11 @@ names = args.names
 classes = fileutil.load_classes(names)
 
 # load network
-print("Loading neural network...")
+load_start_time = time.time()
 model = neuralnetwork.NeuralNetwork(args.configfile)
 model.load_weights(args.weights)
-print("Neural network done loading.")
+load_end_time = time.time()
+print(f"Time to load neural network: {load_end_time - load_start_time} seconds")
 
 model.network_info["height"] = args.res
 input_dimensions = int(model.network_info["height"])
@@ -153,4 +154,4 @@ except FileNotFoundError:
 
 read_end_time = time.time()
 
-print(f"Time to read input images: {read_end_time - read_start_time}")
+print(f"Time to read input images: {read_end_time - read_start_time} seconds")
