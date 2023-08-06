@@ -30,7 +30,7 @@ def parse_arguments():
     parser.add_argument(
         "-b",
         "--batchsize",
-        dest="bs",
+        dest="batchsize",
         help="Batch size. \
             Number of training samples in one forward or backward pass. \
             Batch size defines the number of samples \
@@ -48,7 +48,7 @@ def parse_arguments():
         default=0.5,
     )
     parser.add_argument(
-        "-n",
+        "-m",
         "--nms",
         dest="nms",
         help="Non-maximum suppression threshhold. \
@@ -115,6 +115,21 @@ nms_threshold = float(args.nms)
 num_classes = 80
 names = args.names
 classes = fileutil.load_classes(names)
+
+print("Loading neural network...")
+model = neuralnetwork.NeuralNetwork(args.configfile)
+model.load_weights(args.weights)
+print("Neural network done loading.")
+
+model.network_info["height"] = args.res
+input_dimensions = int(model.network_info["height"])
+print(f"Height: {input_dimensions}")
+
+if using_cuda:
+    model.cuda()
+
+# set model in evaluation mode
+model.eval()
 
 # config_file_path = "config/yolo.cfg"
 # image_file_path = "data/test.png"

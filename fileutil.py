@@ -319,7 +319,7 @@ def determine_output(
         return 0
 
 
-def load_classes(namesfile: str) -> List[str]:
+def load_classes(namesfile: str) -> list[str]:
     """Read in names file containing classes of objects.
 
     Object classes determine the classification/type of object.
