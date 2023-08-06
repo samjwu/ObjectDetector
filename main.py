@@ -1,4 +1,9 @@
+"""Main code for object detector module."""
+
 import argparse
+import os
+import os.path
+import time
 
 import torch
 
@@ -116,6 +121,7 @@ num_classes = 80
 names = args.names
 classes = fileutil.load_classes(names)
 
+# load network
 print("Loading neural network...")
 model = neuralnetwork.NeuralNetwork(args.configfile)
 model.load_weights(args.weights)
@@ -131,18 +137,20 @@ if using_cuda:
 # set model in evaluation mode
 model.eval()
 
-# config_file_path = "config/yolo.cfg"
-# image_file_path = "data/test.png"
-# weights_file_path = "data/yolov3.weights"
-# blocks = fileutil.read_configuration(config_file_path)
-# network_info, module_list = fileutil.create_modules(blocks)
+# detection phase
+read_start_time = time.time()
 
-# model = neuralnetwork.NeuralNetwork(config_file_path)
-# model.load_weights(weights_file_path)
-# model_input = fileutil.process_input_image(image_file_path)
-# # if torch.cuda.is_available():
-# #     prediction = model(model_input.cuda(), True)
-# # else:
-# #     prediction = model(model_input, False)
-# prediction = model(model_input, False)
-# print(prediction)
+try:
+    # check for folder of images
+    img_list = [os.path.join(os.path.realpath("."), images, img) for img in os.listdir(images)]
+except NotADirectoryError:
+    # check for single image
+    img_list = []
+    img_list.append(os.path.join(osp.realpath("."), images))
+except FileNotFoundError:
+    print("No file or directory with the name {}".format(images))
+    exit()
+
+read_end_time = time.time()
+
+print(f"Time to read input images: {read_end_time - read_start_time}")
