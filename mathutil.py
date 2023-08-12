@@ -6,7 +6,7 @@ import torch
 
 def predict_transform(
     prediction: torch.Tensor,
-    input_dimensions: int,
+    input_dimensions: list[int],
     anchors: list[int],
     num_classes: int,
     use_cuda: bool = True,
@@ -120,3 +120,32 @@ def calculate_bounding_box_intersection_over_union(
     )
 
     return intersection_over_union
+
+
+def resize_image(image: numpy.ndarray, input_dimensions: list[int]) -> numpy.ndarray:
+    """Resize an image while keeping the same aspect ratio.
+
+    Use padding to maintain the aspect ratio.
+    """
+    image_width = image.shape[1]
+    image_height = image.shape[0]
+    width, height = input_dimensions
+
+    min_aspect_ratio = min(width / image_width, height / image_height)
+
+    new_width = int(image_width * min_aspect_ratio)
+    new_height = int(image_height * min_aspect_ratio)
+    resized_image = cv2.resize(
+        img, (new_width, new_height), interpolation=cv2.INTER_CUBIC
+    )
+
+    # pad with color (128, 128, 128)
+    canvas = numpy.full((input_dimensions[1], input_dimensions[0], 3), 128)
+
+    avg_height = (height - new_height) // 2
+    avg_width = (width - new_width) // 2
+    canvas[
+        avg_height : avg_height + new_height, avg_width : avg_width + new_width, :
+    ] = resized_image
+
+    return canvas

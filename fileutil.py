@@ -177,7 +177,7 @@ def create_modules(
     return (network_info, module_list)
 
 
-def process_input_image(file: str):
+def process_input_image(file: str) -> torch.Tensor:
     """Read and process an image file."""
     img = cv2.imread(file)
 
