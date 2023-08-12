@@ -5,6 +5,7 @@ import os
 import os.path
 import time
 
+import cv2
 import torch
 
 import fileutil
@@ -138,20 +139,29 @@ if using_cuda:
 # set model in evaluation mode
 model.eval()
 
-# detection phase
+# read paths to images
 read_start_time = time.time()
 
 try:
     # check for folder of images
-    img_list = [os.path.join(os.path.realpath("."), images, img) for img in os.listdir(images)]
+    image_list = [
+        os.path.join(os.path.realpath("."), images, img) for img in os.listdir(images)
+    ]
 except NotADirectoryError:
     # check for single image
-    img_list = []
-    img_list.append(os.path.join(osp.realpath("."), images))
+    image_list = []
+    image_list.append(os.path.join(osp.realpath("."), images))
 except FileNotFoundError:
     print("No file or directory with the name {}".format(images))
     exit()
 
 read_end_time = time.time()
-
 print(f"Time to read input images: {read_end_time - read_start_time} seconds")
+
+# create output directory
+if not os.path.exists(args.output):
+    os.makedirs(args.output)
+
+# load images
+load_batch_start_time = time.time()
+loaded_images = [cv2.imread(x) for x in image_list]
