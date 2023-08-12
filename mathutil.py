@@ -149,3 +149,23 @@ def resize_image(image: numpy.ndarray, input_dimensions: list[int]) -> numpy.nda
     ] = resized_image
 
     return canvas
+
+
+def prepare_image(image: numpy.ndarray, input_dimensions: list[int]) -> torch.Tensor:
+    """
+    Prepares an image for inputting to the neural network.
+
+    Resizes the image while maintaining aspect ratio with padding.
+    Then transposes BGR information to RGB.
+    Then converts the image from numpy.ndarray to a torch.Tensor.
+    """
+    # loaded as BGR
+    image = cv2.resize(image, (input_dimensions, input_dimensions))
+
+    # reorder to RGB
+    image = image[:, :, ::-1].transpose((2, 0, 1)).copy()
+
+    # convert to tensor
+    image = torch.from_numpy(image).float().div(255.0).unsqueeze(0)
+    
+    return image
