@@ -9,6 +9,7 @@ import cv2
 import torch
 
 import fileutil
+import mathutil
 import neuralnetwork
 
 
@@ -165,3 +166,19 @@ if not os.path.exists(args.output):
 # load images
 load_batch_start_time = time.time()
 loaded_images = [cv2.imread(x) for x in image_list]
+
+# prepare images in loaded images
+image_batches = list(
+    map(
+        mathutil.prepare_image,
+        loaded_images,
+        [image_input_dimensions for x in range(len(image_list))],
+    )
+)
+
+# get list with dimensions of original images
+image_dimension_list = [(x.shape[1], x.shape[0]) for x in loaded_images]
+image_dimension_list = torch.FloatTensor(image_dimension_list).repeat(1, 2)
+
+if CUDA:
+    image_dimension_list = image_dimension_list.cuda()
