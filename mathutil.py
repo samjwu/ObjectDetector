@@ -1,5 +1,6 @@
 """Utility functions for calculations."""
 
+import cv2
 import numpy
 import torch
 

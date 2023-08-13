@@ -23,7 +23,7 @@ def parse_arguments():
         "--input",
         dest="input",
         help="Image or directory containing input images used for detection.",
-        default="data",
+        default="data/test.png",
         type=str,
     )
     parser.add_argument(
@@ -107,7 +107,7 @@ def parse_arguments():
 
 
 # check if GPU supports CUDA
-using_cuda = torch.cuda.is_available()
+use_cuda = torch.cuda.is_available()
 
 # get input image(s)
 args = parse_arguments()
@@ -135,7 +135,7 @@ model.network_info["height"] = args.res
 input_dimensions = int(model.network_info["height"])
 print(f"Height: {input_dimensions}")
 
-if using_cuda:
+if use_cuda:
     model.cuda()
 
 # set model in evaluation mode
@@ -152,7 +152,7 @@ try:
 except NotADirectoryError:
     # check for single image
     image_list = []
-    image_list.append(os.path.join(osp.realpath("."), images))
+    image_list.append(os.path.join(os.path.realpath("."), images))
 except FileNotFoundError:
     print("No file or directory with the name {}".format(images))
     exit()
@@ -173,7 +173,7 @@ image_batches = list(
     map(
         mathutil.prepare_image,
         loaded_images,
-        [image_input_dimensions for x in range(len(image_list))],
+        [input_dimensions for x in range(len(image_list))],
     )
 )
 
