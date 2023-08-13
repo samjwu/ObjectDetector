@@ -130,6 +130,7 @@ model.load_weights(args.weights)
 load_end_time = time.time()
 print(f"Time to load neural network: {load_end_time - load_start_time} seconds")
 
+# get network information
 model.network_info["height"] = args.res
 input_dimensions = int(model.network_info["height"])
 print(f"Height: {input_dimensions}")
@@ -180,5 +181,24 @@ image_batches = list(
 image_dimension_list = [(x.shape[1], x.shape[0]) for x in loaded_images]
 image_dimension_list = torch.FloatTensor(image_dimension_list).repeat(1, 2)
 
-if CUDA:
+if use_cuda:
     image_dimension_list = image_dimension_list.cuda()
+
+# check if there is an extra batch due to remainder
+has_remainder = 0
+if len(image_dimension_list) % batch_size:
+    has_remainder = 1
+
+# create image batches
+if batch_size != 1:
+    num_batches = len(image_list) // batch_size + has_remainder
+    image_batches = [
+        torch.cat(
+            (
+                image_batches[
+                    i * batch_size : min((i + 1) * batch_size, len(image_batches))
+                ]
+            )
+        )
+        for i in range(num_batches)
+    ]
