@@ -69,7 +69,7 @@ def parse_arguments():
         help="Configuration file. \
             Contains information about layers \
             used for the object detector's convolutional neural network.",
-        default="config/yolo.cfg",
+        default="data/yolo.cfg",
         type=str,
     )
     parser.add_argument(

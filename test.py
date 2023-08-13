@@ -6,7 +6,7 @@ import fileutil
 import neuralnetwork
 
 
-config_file_path = "config/yolo.cfg"
+config_file_path = "data/yolo.cfg"
 image_file_path = "data/test.png"
 weights_file_path = "data/yolov3.weights"
 blocks = fileutil.read_configuration(config_file_path)
