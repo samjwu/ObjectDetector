@@ -155,7 +155,7 @@ except NotADirectoryError:
     image_list = []
     image_list.append(os.path.join(os.path.realpath("."), images))
 except FileNotFoundError:
-    print(f"No file or directory with the name {images}")
+    print(f"No file or directory with the name: {images}")
     exit()
 
 read_end_time = time.time()
@@ -209,6 +209,8 @@ write = 0
 detection_loop_start_time = time.time()
 with torch.no_grad():
     for i, batch in enumerate(image_batches):
+        prediction_start_time = time.time()
+
         if use_cuda:
             batch = batch.cuda()
 
@@ -223,6 +225,33 @@ with torch.no_grad():
             non_maximum_suppression_confidence=nms_threshold,
         )
 
-        # no prediction, skip the rest of the current detection loop
+        prediction_end_time = time.time()
+
+        # no objects detected, skip the rest of the current detection loop
         if type(prediction) == int and prediction == 0:
             continue
+
+        # transform the prediction attribute
+        # from index in batch to index in image_list
+        prediction[:, 0] += i * batch_size
+
+        # if output has not been init, do it
+        if not write:
+            output = prediction
+            write = 1
+        else:
+            output = torch.cat((output, prediction))
+
+        # get number of objects detected in current batch
+        for image_index, image in enumerate(
+            image_list[i * batch_size : min((i + 1) * batch_size, len(image_list))]
+        ):
+            image_id = i * batch_size + image_index
+            objects = [classes[int(x[-1])] for x in output if int(x[0]) == image_id]
+            print(
+                f"Time to detect objects on {image.split('/')[-1]}: {(prediction_end_time - prediction_start_time) / batch_size} seconds"
+            )
+            print(f"Objects detected: {' '.join(objects)}")
+
+        if use_cuda:
+            torch.cuda.synchronize()
