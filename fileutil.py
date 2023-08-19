@@ -198,7 +198,7 @@ def process_input_image(file: str) -> torch.Tensor:
 
 
 def determine_output(
-    prediction,
+    prediction: torch.Tensor,
     confidence: float,
     num_classes: int,
     non_maximum_suppression_confidence: int = 0.4,
