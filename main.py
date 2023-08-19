@@ -7,6 +7,7 @@ import time
 
 import cv2
 import torch
+import torch.autograd
 
 import fileutil
 import mathutil
@@ -202,3 +203,19 @@ if batch_size != 1:
         )
         for i in range(num_batches)
     ]
+
+# detection loop
+write = 0
+detection_loop_start_time = time.time()
+for i, batch in enumerate(image_batches):
+    if use_cuda:
+        batch = batch.cuda()
+
+    prediction = model(torch.autograd.Variable(batch, volatile=True), use_cuda)
+
+    prediction = fileutil.determine_output(
+        prediction=prediction,
+        confidence=object_confidence,
+        num_classes=num_classes,
+        non_maximum_suppression_confidence=nms_threshold,
+    )
