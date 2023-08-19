@@ -155,7 +155,7 @@ except NotADirectoryError:
     image_list = []
     image_list.append(os.path.join(os.path.realpath("."), images))
 except FileNotFoundError:
-    print("No file or directory with the name {}".format(images))
+    print(f"No file or directory with the name {images}")
     exit()
 
 read_end_time = time.time()
@@ -212,11 +212,17 @@ with torch.no_grad():
         if use_cuda:
             batch = batch.cuda()
 
+        # load image
         prediction = model(torch.autograd.Variable(batch), use_cuda)
 
+        # get output of detection
         prediction = fileutil.determine_output(
             prediction=prediction,
             confidence=object_confidence,
             num_classes=num_classes,
             non_maximum_suppression_confidence=nms_threshold,
         )
+
+        # no prediction, skip the rest of the current detection loop
+        if type(prediction) == int and prediction == 0:
+            continue
