@@ -188,18 +188,12 @@ def draw_colored_boxes(
     image = results[int(x[0])]
     color = random.choice(colors)
 
-    print(x)
-    print(bottom_left)
-
-    print((int(bottom_left[0]), int(bottom_left[1])))
-
-    print(color)
     cv2.rectangle(
         image,
         (int(bottom_left[0]), int(bottom_left[1])),
         (int(top_right[0]), int(top_right[1])),
         color,
-        1,
+        -1,
     )
 
     image_class = int(x[-1])
@@ -209,8 +203,8 @@ def draw_colored_boxes(
 
     cv2.rectangle(
         image,
-        bottom_left,
-        top_right,
+        (int(bottom_left[0]), int(bottom_left[1])),
+        (int(top_right[0]), int(top_right[1])),
         color,
         -1,
     )
@@ -218,7 +212,7 @@ def draw_colored_boxes(
     cv2.putText(
         image,
         label,
-        (bottom_left[0], top_right[1]),
+        (int(bottom_left[0]), int(top_right[1])),
         cv2.FONT_HERSHEY_PLAIN,
         1,
         [225, 255, 255],

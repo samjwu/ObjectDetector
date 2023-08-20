@@ -285,7 +285,5 @@ with torch.no_grad():
     # load color schemes
     colors = pickle.load(open("data/color_palette", "rb"))
 
-    print(output)
-
     # draw colored boxes and labels on the image
     list(map(lambda x: mathutil.draw_colored_boxes(x, loaded_images, classes, colors), output))
