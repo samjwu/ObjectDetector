@@ -1,8 +1,9 @@
 """Utility functions for calculations."""
 
+import random
+
 import cv2
 import numpy
-import random
 import torch
 
 
