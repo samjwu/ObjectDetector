@@ -255,3 +255,12 @@ with torch.no_grad():
 
         if use_cuda:
             torch.cuda.synchronize()
+
+
+    # check for object detections
+    # exit if none made
+    try:
+        output
+    except NameError:
+        print ("No objects were detected")
+        exit()
