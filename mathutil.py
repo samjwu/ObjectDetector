@@ -2,6 +2,7 @@
 
 import cv2
 import numpy
+import random
 import torch
 
 
@@ -175,7 +176,7 @@ def draw_colored_boxes(
     x: torch.Tensor,
     results: torch.Tensor,
     classes: list[str],
-    color: tuple[int, int, int],
+    colors: list[tuple[int, int, int]],
 ):
     """Draws a colored box on an image.
 
@@ -185,34 +186,43 @@ def draw_colored_boxes(
     top_right = tuple(x[3:5].int())
 
     image = results[int(x[0])]
+    color = random.choice(colors)
+
+    print(x)
+    print(bottom_left)
+
+    print((int(bottom_left[0]), int(bottom_left[1])))
+
+    print(color)
+    cv2.rectangle(
+        image,
+        (int(bottom_left[0]), int(bottom_left[1])),
+        (int(top_right[0]), int(top_right[1])),
+        color,
+        1,
+    )
+
     image_class = int(x[-1])
     label = f"{classes[image_class]}"
-
-    cv2.rectangle(
-        image=image,
-        start_point=bottom_left,
-        end_point=top_right,
-        color=color,
-        thickness=1,
-    )
     text_size = cv2.getTextSize(label, cv2.FONT_HERSHEY_PLAIN, 1, 1)[0]
     top_right = (bottom_left[0] + text_size[0] + 3, bottom_left[1] + text_size[1] + 4)
 
     cv2.rectangle(
-        image=image,
-        start_point=bottom_left,
-        end_point=top_right,
-        color=color,
-        thickness=-1,
+        image,
+        bottom_left,
+        top_right,
+        color,
+        -1,
     )
+
     cv2.putText(
-        image=image,
-        text=label,
-        org=(bottom_left[0], top_right[1]),
-        font=cv2.FONT_HERSHEY_PLAIN,
-        fontScale=1,
-        color=[225, 255, 255],
-        thickness=1,
+        image,
+        label,
+        (bottom_left[0], top_right[1]),
+        cv2.FONT_HERSHEY_PLAIN,
+        1,
+        [225, 255, 255],
+        1,
     )
 
     return image

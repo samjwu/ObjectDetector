@@ -267,7 +267,7 @@ with torch.no_grad():
 
     # transform output bounding box coords to input dimensions of original image
     image_dimension_list = torch.index_select(image_dimension_list, 0, output[:, 0].long())
-    scaling_factor = torch.min(input_dimensions / image_dimension_list, 1)[0].view(-1, 1)
+    scaling_factor = torch.min(416 / image_dimension_list, 1)[0].view(-1, 1)
     output[:, [1, 3]] -= (
         input_dimensions - scaling_factor * image_dimension_list[:, 0].view(-1, 1)
     ) / 2
@@ -284,3 +284,8 @@ with torch.no_grad():
 
     # load color schemes
     colors = pickle.load(open("data/color_palette", "rb"))
+
+    print(output)
+
+    # draw colored boxes and labels on the image
+    list(map(lambda x: mathutil.draw_colored_boxes(x, loaded_images, classes, colors), output))
