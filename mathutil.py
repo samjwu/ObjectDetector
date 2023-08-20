@@ -194,7 +194,7 @@ def draw_colored_boxes(
         (int(bottom_left[0]), int(bottom_left[1])),
         (int(top_right[0]), int(top_right[1])),
         color,
-        -1,
+        1,
     )
 
     image_class = int(x[-1])

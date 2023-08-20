@@ -7,6 +7,7 @@ import pickle
 import time
 
 import cv2
+import pandas
 import torch
 import torch.autograd
 
@@ -287,3 +288,7 @@ with torch.no_grad():
 
     # draw colored boxes and labels on the image
     list(map(lambda x: mathutil.draw_colored_boxes(x, loaded_images, classes, colors), output))
+
+    # write output images
+    output_names = pandas.Series(image_list).apply(lambda x: f"{args.output}/output_{x.split('/')[-1]}")
+    list(map(cv2.imwrite, output_names, loaded_images))
