@@ -153,8 +153,7 @@ def resize_image(image: numpy.ndarray, input_dimensions: list[int]) -> numpy.nda
 
 
 def prepare_image(image: numpy.ndarray, input_dimensions: list[int]) -> torch.Tensor:
-    """
-    Prepares an image for inputting to the neural network.
+    """Prepares an image for inputting to the neural network.
 
     Resizes the image while maintaining aspect ratio with padding.
     Then transposes BGR information to RGB.
@@ -168,5 +167,52 @@ def prepare_image(image: numpy.ndarray, input_dimensions: list[int]) -> torch.Te
 
     # convert to tensor
     image = torch.from_numpy(image).float().div(255.0).unsqueeze(0)
-    
+
+    return image
+
+
+def draw_colored_boxes(
+    x: torch.Tensor,
+    results: torch.Tensor,
+    classes: list[str],
+    color: tuple[int, int, int],
+):
+    """Draws a colored box on an image.
+
+    Labels the colored box with the detected object class.
+    """
+    bottom_left = tuple(x[1:3].int())
+    top_right = tuple(x[3:5].int())
+
+    image = results[int(x[0])]
+    image_class = int(x[-1])
+    label = f"{classes[image_class]}"
+
+    cv2.rectangle(
+        image=image,
+        start_point=bottom_left,
+        end_point=top_right,
+        color=color,
+        thickness=1,
+    )
+    text_size = cv2.getTextSize(label, cv2.FONT_HERSHEY_PLAIN, 1, 1)[0]
+    top_right = (bottom_left[0] + text_size[0] + 3, bottom_left[1] + text_size[1] + 4)
+
+    cv2.rectangle(
+        image=image,
+        start_point=bottom_left,
+        end_point=top_right,
+        color=color,
+        thickness=-1,
+    )
+    cv2.putText(
+        image=image,
+        text=label,
+        org=(bottom_left[0], top_right[1]),
+        font=cv2.FONT_HERSHEY_PLAIN,
+        fontScale=1,
+        color=[225, 255, 255],
+        thickness=1,
+    )
+
     return image
