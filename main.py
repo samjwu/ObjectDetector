@@ -275,3 +275,8 @@ with torch.no_grad():
     ) / 2
     # revert resizing from prepare_image
     output[:, 1:5] /= scaling_factor
+
+    # cropping bounding boxes with boundaries outside the image
+    for i in range(output.shape[0]):
+        output[i, [1, 3]] = torch.clamp(output[i, [1, 3]], 0.0, im_dim_list[i, 0])
+        output[i, [2, 4]] = torch.clamp(output[i, [2, 4]], 0.0, im_dim_list[i, 1])
