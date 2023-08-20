@@ -256,11 +256,22 @@ with torch.no_grad():
         if use_cuda:
             torch.cuda.synchronize()
 
-
     # check for object detections
     # exit if none made
     try:
         output
     except NameError:
-        print ("No objects were detected")
+        print("No objects were detected")
         exit()
+
+    # transform output bounding box coords to input dimensions of original image
+    img_dimension_list = torch.index_select(img_dimension_list, 0, output[:, 0].long())
+    scaling_factor = torch.min(input_dimensions / img_dimension_list, 1)[0].view(-1, 1)
+    output[:, [1, 3]] -= (
+        input_dimensions - scaling_factor * img_dimension_list[:, 0].view(-1, 1)
+    ) / 2
+    output[:, [2, 4]] -= (
+        input_dimensions - scaling_factor * img_dimension_list[:, 1].view(-1, 1)
+    ) / 2
+    # revert resizing from prepare_image
+    output[:, 1:5] /= scaling_factor
