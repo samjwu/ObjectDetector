@@ -3,6 +3,7 @@
 import argparse
 import os
 import os.path
+import pickle
 import time
 
 import cv2
@@ -265,18 +266,21 @@ with torch.no_grad():
         exit()
 
     # transform output bounding box coords to input dimensions of original image
-    img_dimension_list = torch.index_select(img_dimension_list, 0, output[:, 0].long())
-    scaling_factor = torch.min(input_dimensions / img_dimension_list, 1)[0].view(-1, 1)
+    image_dimension_list = torch.index_select(image_dimension_list, 0, output[:, 0].long())
+    scaling_factor = torch.min(input_dimensions / image_dimension_list, 1)[0].view(-1, 1)
     output[:, [1, 3]] -= (
-        input_dimensions - scaling_factor * img_dimension_list[:, 0].view(-1, 1)
+        input_dimensions - scaling_factor * image_dimension_list[:, 0].view(-1, 1)
     ) / 2
     output[:, [2, 4]] -= (
-        input_dimensions - scaling_factor * img_dimension_list[:, 1].view(-1, 1)
+        input_dimensions - scaling_factor * image_dimension_list[:, 1].view(-1, 1)
     ) / 2
     # revert resizing from prepare_image
     output[:, 1:5] /= scaling_factor
 
     # cropping bounding boxes with boundaries outside the image
     for i in range(output.shape[0]):
-        output[i, [1, 3]] = torch.clamp(output[i, [1, 3]], 0.0, im_dim_list[i, 0])
-        output[i, [2, 4]] = torch.clamp(output[i, [2, 4]], 0.0, im_dim_list[i, 1])
+        output[i, [1, 3]] = torch.clamp(output[i, [1, 3]], 0.0, image_dimension_list[i, 0])
+        output[i, [2, 4]] = torch.clamp(output[i, [2, 4]], 0.0, image_dimension_list[i, 1])
+
+    # load color schemes
+    colors = pickle.load(open("data/color_palette", "rb"))
