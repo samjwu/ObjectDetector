@@ -15,5 +15,11 @@ To run the program, use the following commands:
 ```
 pip install -r requirements.txt
 
-python main.py
+python main.py -i <input image>
+```
+
+For a list of all options, use the help argument:
+
+```
+python main.py -h
 ```
