@@ -1,6 +1,6 @@
 # Object Detector
 
-Object detection using PyTorch and You Only Look Once (YOLO) algorithm
+Object detection using PyTorch and You Only Look Once (YOLO) algorithm.
 
 ![Object Detector](output/output_animals.jpeg)
 
