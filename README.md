@@ -18,6 +18,10 @@ pip install -r requirements.txt
 python main.py -i <input image>
 ```
 
+where `<input image>` is the name of the image to run through the object detector.
+
+Example: `python main.py -i input/animals.jpeg`
+
 For a list of all options, use the help argument:
 
 ```
