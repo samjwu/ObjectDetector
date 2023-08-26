@@ -26,7 +26,7 @@ def parse_arguments():
         "--input",
         dest="input",
         help="Image or directory containing input images used for detection.",
-        default="data/test.png",
+        default="input/test.png",
         type=str,
     )
     parser.add_argument(
